@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:services_discovery/bonsoir/discovery/discovery.dart';
 import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
+import 'package:services_discovery/bonsoir/discovery/resolved_service.dart';
 import 'package:services_discovery/multicast_dns/multicast_dns.dart';
 import 'package:services_discovery/utils/serviceInfo.dart';
 
@@ -126,13 +127,14 @@ class _MyHomePageState extends State<MyHomePage> {
     discovery.eventStream.listen((event) {
       if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_RESOLVED) {
         print('Service found : ${event.service.toJson()}');
-        if (event.service!=null) {
+        if (event.service!=null && event.service is ResolvedBonsoirService) {
+          ResolvedBonsoirService service = event.service;
           _addService({
-            'name': event.service.name,
-            'port': event.service.port,
-            'ip': '',
+            'name': service.name,
+            'port': service.port,
+            'ip': service.ip,
           });
-        }
+        } 
          
       } else if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_LOST) {
         print('Service lost : ${event.service.toJson()}');
