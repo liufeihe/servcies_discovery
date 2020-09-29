@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:services_discovery/bonsoir/discovery/discovery.dart';
+import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
 import 'package:services_discovery/multicast_dns/multicast_dns.dart';
 import 'package:services_discovery/utils/serviceInfo.dart';
 
@@ -57,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<String, ServiceInfo> servicesInfoMap = {};
   bool isStart = false;
   MDnsClient client;
+  BonsoirDiscovery discovery;
   Timer timer;
 
   void _addService(service){
@@ -81,7 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _startDiscovery() {
     isStart = true;
-    _startMdnsClient();
+    if (Platform.isAndroid) {
+      _startMdnsClient();
+    } else if (Platform.isIOS) {
+      _startNsd();
+    }
   }
 
   void _stopDiscovery(){
@@ -94,6 +102,25 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
     _cancelMdnsClient();
+  }
+
+  void _startNsd() async {
+    String type = '_lebai._tcp';
+
+    // Once defined, we can start the discovery :
+    discovery = BonsoirDiscovery(type: type);
+    await discovery.ready;
+    await discovery.start();
+
+    // If you want to listen to the discovery :
+    discovery.eventStream.listen((event) {
+      if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_RESOLVED) {
+        print('Service found : ${event.service.toJson()}');
+      } else if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_LOST) {
+        print('Service lost : ${event.service.toJson()}');
+      }
+    });
+
   }
 
   void _startMdnsClient() async {
