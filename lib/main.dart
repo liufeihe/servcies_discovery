@@ -66,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addService(service){
     var name = service['name'];
     var ip = service['ip'];
+    var ips = service['ips'];
     var port = service['port'];
     ServiceInfo sInfo = servicesInfoMap[name];
     if (sInfo!=null) {
@@ -85,6 +86,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _startDiscovery() {
     isStart = true;
+    if (mounted) {
+      setState(() {
+        isStart = isStart;
+      });
+    }
     if (Platform.isAndroid) {
       _startMdnsClient();
     } else if (Platform.isIOS) {
@@ -101,7 +107,11 @@ class _MyHomePageState extends State<MyHomePage> {
         isStart = isStart;
       });
     }
-    _cancelMdnsClient();
+    if (Platform.isAndroid) {
+      _cancelMdnsClient();
+    } else if (Platform.isIOS) {
+      _cancelNsd();
+    }
   }
 
   void _startNsd() async {
@@ -116,11 +126,24 @@ class _MyHomePageState extends State<MyHomePage> {
     discovery.eventStream.listen((event) {
       if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_RESOLVED) {
         print('Service found : ${event.service.toJson()}');
+        if (event.service!=null) {
+          _addService({
+            'name': event.service.name,
+            'port': event.service.port,
+            'ip': '',
+          });
+        }
+         
       } else if (event.type == BonsoirDiscoveryEventType.DISCOVERY_SERVICE_LOST) {
         print('Service lost : ${event.service.toJson()}');
       }
     });
-
+  }
+  void _cancelNsd() async {
+    if (discovery!=null) {
+      discovery.stop();
+      discovery = null;
+    }
   }
 
   void _startMdnsClient() async {

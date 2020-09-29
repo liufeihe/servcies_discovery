@@ -8,6 +8,8 @@ import Flutter
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    
+    SwiftBonsoirPlugin.register(with: self.registrar(forPlugin: "fr.skyost.bonsoir") as! FlutterPluginRegistrar)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
