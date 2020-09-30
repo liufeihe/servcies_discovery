@@ -6,7 +6,10 @@ import 'package:services_discovery/bonsoir/discovery/discovery.dart';
 import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
 import 'package:services_discovery/bonsoir/discovery/resolved_service.dart';
 import 'package:services_discovery/multicast_dns/multicast_dns.dart';
+import 'package:services_discovery/utils/route.dart';
+import 'package:services_discovery/utils/screen.dart';
 import 'package:services_discovery/utils/serviceInfo.dart';
+import 'package:services_discovery/views/device.dart';
 
 void main() {
   runApp(MyApp());
@@ -35,6 +38,9 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title: '设备发现'),
+      routes: {
+        '/device': (context)=>Device(),
+      }
     );
   }
 }
@@ -58,7 +64,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Map<String, ServiceInfo> servicesInfoMap = {};
+  Map<String, int> servicesInfoMap = {};
+  List<ServiceInfo> servicesInfoList = [];
   bool isStart = false;
   MDnsClient client;
   BonsoirDiscovery discovery;
@@ -69,19 +76,21 @@ class _MyHomePageState extends State<MyHomePage> {
     var name = service['name'];
     var ips = service['ips'];
     var port = service['port'];
-    ServiceInfo sInfo = servicesInfoMap[name];
-    
     ips = ips!=null?ips:[];
-    if (sInfo!=null) {
+
+    int idx = servicesInfoMap[name];
+    if (idx!=null) {
+      ServiceInfo sInfo = servicesInfoList[idx];
       for(var ip in ips){
         sInfo.addIp(ip);
       }
     } else {
-      servicesInfoMap[name] = ServiceInfo(
+      servicesInfoMap[name] = servicesInfoList.length;
+      servicesInfoList.add(ServiceInfo(
         name: name,
         ips: ips,
         port: port
-      );
+      ));
     }
 
     setState(() {
@@ -196,25 +205,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return name;
   }
 
-  List<Widget> _getWidgets(){
-    List<Widget> widgets = [];
-    widgets.add(Text('发现的设备：(${servicesInfoMap.length})'));
-    List<String> texts = [];
-    for(var service in servicesInfoMap.values){
-      texts.add('$service');
-    }
-    texts.sort();
-    for(int i=0; i<texts.length; i++){
-      var text = texts[i];
-      widgets.add(Padding(
-        padding: EdgeInsets.fromLTRB(0,10,0,10),
-        child: Text(
-          '(${i+1}), $text',
-        ),
-      ));
-    }
-    return widgets;
-  }
+  // List<Widget> _getWidgets(){
+  //   List<Widget> widgets = [];
+  //   widgets.add(Text('发现的设备：(${servicesInfoMap.length})'));
+  //   List<String> texts = [];
+  //   for(var service in servicesInfoMap.values){
+  //     texts.add('$service');
+  //   }
+  //   texts.sort();
+  //   for(int i=0; i<texts.length; i++){
+  //     var text = texts[i];
+  //     widgets.add();
+  //   }
+  //   return widgets;
+  // }
 
   @override
   void dispose() {
@@ -225,40 +229,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: SingleChildScrollView(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: _getWidgets(),
-        ),
+        child: Container(
+          height: ScreenUtils.getScreenH(context),
+          child: ListView.builder(
+            itemCount: servicesInfoList.length,
+            itemBuilder: (context, index) {
+              ServiceInfo service = servicesInfoList[index];
+
+              return ListTile(
+                contentPadding: EdgeInsets.all(10),
+                title: _DeviceItem(
+                  idx: index,
+                  text: '$service',
+                  tapCallback: (){
+                    var ip = service.ips[0];
+                    var port = service.port;
+                    var url = 'http://$ip:$port';
+                    RouteHandler.goTo(context, '/device', arguments: {'url': url});
+                  }
+                ),
+              );
+            }
+          ),
+        )
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: isStart?Colors.red[300]:Colors.green[300],
@@ -272,6 +270,34 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: isStart?'停止':'启动',
         child: Icon(isStart?Icons.stop:Icons.play_arrow),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+void voidCallback(){}
+class _DeviceItem extends StatelessWidget {
+  final int idx;
+  final String text;
+  final Function tapCallback;
+
+  _DeviceItem({
+    this.idx,
+    this.text:'',
+    this.tapCallback: voidCallback,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: (){
+        tapCallback();
+      },
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(0,10,0,10),
+        child: Text(
+          '(${idx+1}), $text',
+        ),
+      ),
     );
   }
 }
