@@ -114,9 +114,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _stopDiscovery(){
     isStart = false;
+    servicesInfoList = [];
     servicesInfoMap = {};
     if (mounted) {
       setState(() {
+        servicesInfoList = servicesInfoList;
         servicesInfoMap = servicesInfoMap;
         isStart = isStart;
       });
