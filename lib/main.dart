@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:services_discovery/bonsoir/discovery/discovery.dart';
@@ -207,6 +208,80 @@ class _MyHomePageState extends State<MyHomePage> {
     return name;
   }
 
+  Future<String> getNetworkIpFromConnect() async {
+    String netIp='';
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        if (addr.type == InternetAddressType.IPv4) {
+          netIp = addr.address;
+          break;
+        }
+      }
+    }
+    return netIp;
+  }
+
+  Future<String> _getIp(List<String> ips) async {
+    String ip = '';
+    if (ips.length==1) {
+      ip = ips[0];
+      return ip;
+    }
+
+    String netIp = await getNetworkIpFromConnect();
+    List<int> dst = _getIpArrFromStr(netIp);
+    if (dst.length==0) {
+      ip = ips[0];
+      return ip;
+    }
+
+    List<List<int>> ipIntArr = [];
+    for (int i=0; i<ips.length; i++) {
+      List<int> temp = _getIpArrFromStr(ips[i]);
+      if (temp.length==4) {
+        ipIntArr.add(temp);
+      }
+    }
+    
+    List<int> ipSumArr = [];
+    for(int i=0; i<ipIntArr.length; i++) {
+      int sum=0, n;
+      for(int j=0; j<dst.length; j++){
+        n = (ipIntArr[i][j]-dst[j]).abs();
+        ipIntArr[i][j] = n;
+        sum += n * pow(255, dst.length-1-j);
+      }
+      ipSumArr.add(sum);
+    }
+    print(ipIntArr);
+    print(ipSumArr);
+    int idx = -1;
+    if (ipSumArr.length>0) {
+      int m = ipSumArr[0];
+      idx = 0;
+      for (int i=1; i<ipSumArr.length; i++) {
+        if (m>ipSumArr[i]) {
+          m = ipSumArr[i];
+          idx = i;
+        }
+      }
+    }
+    if (idx!=-1) {
+      ip = ips[idx];
+    }
+    return ip;
+  }
+  List<int> _getIpArrFromStr(String ipStr){
+    List<String> ipStrList = ipStr.split('.');
+    List<int> ipIntList = [];
+    if (ipStrList.length==4) {
+      for(int i=0; i<ipStrList.length; i++) {
+      ipIntList.add(int.parse(ipStrList[i]));
+    }
+    }
+    return ipIntList;
+  }
+
   // List<Widget> _getWidgets(){
   //   List<Widget> widgets = [];
   //   widgets.add(Text('发现的设备：(${servicesInfoMap.length})'));
@@ -248,8 +323,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: _DeviceItem(
                   idx: index,
                   text: '$service',
-                  tapCallback: (){
-                    var ip = service.ips[0];
+                  tapCallback: () async {
+                    var ip = await _getIp(service.ips);
                     var port = service.port;
                     var url = 'http://$ip:$port';
                     RouteHandler.goTo(context, '/device', arguments: {'url': url});
