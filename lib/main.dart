@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: '服务发现'),
+      home: MyHomePage(title: '设备发现'),
     );
   }
 }
@@ -63,19 +63,23 @@ class _MyHomePageState extends State<MyHomePage> {
   MDnsClient client;
   BonsoirDiscovery discovery;
   Timer timer;
+  String serviceType = '_lebai._tcp';
 
   void _addService(service){
     var name = service['name'];
-    var ip = service['ip'];
     var ips = service['ips'];
     var port = service['port'];
     ServiceInfo sInfo = servicesInfoMap[name];
+    
+    ips = ips!=null?ips:[];
     if (sInfo!=null) {
-      sInfo.addIp(ip);
+      for(var ip in ips){
+        sInfo.addIp(ip);
+      }
     } else {
       servicesInfoMap[name] = ServiceInfo(
         name: name,
-        ips: [ip],
+        ips: ips,
         port: port
       );
     }
@@ -116,10 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startNsd() async {
-    String type = '_lebai._tcp';
-
     // Once defined, we can start the discovery :
-    discovery = BonsoirDiscovery(type: type);
+    discovery = BonsoirDiscovery(type: serviceType);
     await discovery.ready;
     await discovery.start();
 
@@ -132,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _addService({
             'name': service.name,
             'port': service.port,
-            'ip': service.ip,
+            'ips': [service.ip],
           });
         } 
          
@@ -167,10 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
   void _checkMdnsClient() async {
-    String name = '_lebai._tcp.local';
     client.clear();
     await for (PtrResourceRecord ptr in client
-        .lookup<PtrResourceRecord>(ResourceRecordQuery.serverPointer(name))) {
+        .lookup<PtrResourceRecord>(ResourceRecordQuery.serverPointer(serviceType))) {
 
       await for (SrvResourceRecord srv in client.lookup<SrvResourceRecord>(
           ResourceRecordQuery.service(ptr.domainName))) {
@@ -179,18 +180,25 @@ class _MyHomePageState extends State<MyHomePage> {
             in client.lookup<IPAddressResourceRecord>(
                 ResourceRecordQuery.addressIPv4(srv.target))) {
           _addService({
-            'name': srv.target,
+            'name': _getName(srv.target),
             'port': srv.port,
-            'ip': ip.address.address,
+            'ips': [ip.address.address],
           });  
         }
       }
     }
   }
+  String _getName(String name){
+    int idx = name.indexOf('.local');
+    if (idx!=-1) {
+      name = name.substring(0, idx);
+    }
+    return name;
+  }
 
   List<Widget> _getWidgets(){
     List<Widget> widgets = [];
-    widgets.add(Text('发现的服务数量：${servicesInfoMap.length}'));
+    widgets.add(Text('发现的设备：(${servicesInfoMap.length})'));
     List<String> texts = [];
     for(var service in servicesInfoMap.values){
       texts.add('$service');
