@@ -67,6 +67,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Map<String, int> servicesInfoMap = {};
   List<ServiceInfo> servicesInfoList = [];
+  List<ServiceInfo> servicesInfoShowList = [];
   bool isStart = false;
   MDnsClient client;
   BonsoirDiscovery discovery;
@@ -94,8 +95,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ));
     }
 
+    servicesInfoShowList = [];
+    for(int i=0; i<servicesInfoList.length; i++){
+      servicesInfoShowList.add(ServiceInfo().copyWith(servicesInfoList[i]));
+    }
+    servicesInfoShowList.sort((left,right)=>left.name.compareTo(right.name));
+
     setState(() {
       servicesInfoMap = servicesInfoMap;
+      servicesInfoList = servicesInfoList;
+      servicesInfoShowList = servicesInfoShowList;
     });
   }
 
@@ -115,10 +124,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _stopDiscovery(){
     isStart = false;
+    servicesInfoShowList = [];
     servicesInfoList = [];
     servicesInfoMap = {};
     if (mounted) {
       setState(() {
+        servicesInfoShowList = servicesInfoShowList;
         servicesInfoList = servicesInfoList;
         servicesInfoMap = servicesInfoMap;
         isStart = isStart;
@@ -282,21 +293,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return ipIntList;
   }
 
-  // List<Widget> _getWidgets(){
-  //   List<Widget> widgets = [];
-  //   widgets.add(Text('发现的设备：(${servicesInfoMap.length})'));
-  //   List<String> texts = [];
-  //   for(var service in servicesInfoMap.values){
-  //     texts.add('$service');
-  //   }
-  //   texts.sort();
-  //   for(int i=0; i<texts.length; i++){
-  //     var text = texts[i];
-  //     widgets.add();
-  //   }
-  //   return widgets;
-  // }
-
   @override
   void dispose() {
     _stopDiscovery();
@@ -309,19 +305,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        toolbarHeight: 60,
       ),
       body: SingleChildScrollView(
         child: Container(
-          height: ScreenUtils.getScreenH(context),
+          height: ScreenUtils.getScreenH(context)-ScreenUtils.getStatusBarH(context)-60,
           child: ListView.builder(
-            itemCount: servicesInfoList.length,
+            itemCount: servicesInfoShowList.length,
             itemBuilder: (context, index) {
-              ServiceInfo service = servicesInfoList[index];
-
+              ServiceInfo service = servicesInfoShowList[index];
               return ListTile(
-                contentPadding: EdgeInsets.all(10),
+                contentPadding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                 title: _DeviceItem(
-                  idx: index,
+                  idx: servicesInfoShowList.length-1-index,
                   text: '$service',
                   tapCallback: () async {
                     var ip = await _getIp(service.ips);
