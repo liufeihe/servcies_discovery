@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class ColorConstant {
   static const Color themeBgColor = Color(0xff24292d);
+  static const Color themeRedColor = Color(0xffEB6160);
 
   static const Color bgLinearGreenColor1 = Color(0xff3dbd7d);
   static const Color bgLinearGreenColor2 = Color(0xffc1f3da);
@@ -21,6 +22,7 @@ class ColorConstant {
   static const Color circleLinearRed2 = Color(0xffda214c);
 
   static const Color bgGreyColor = Color(0xfff7f7f7);
+  static const Color bgGreyColor1 = Color(0xfffafafa);
   static const Color bgGreyColor2 = Color(0xfff5f5f5);
   static const Color bgGreyColor3 = Color(0xffe4e4e4);
   static const Color bgGrey4 = Color(0xffededed);
@@ -54,6 +56,7 @@ class ColorConstant {
   static const Color textBlackDeep = Color(0xff1a1a1a);
   static const Color textColorBlack = Color(0xff333333);
   static const Color textBlack2 = Color(0xff393939);
+  static const Color textBlack3 = Color(0xff555555);
   static const Color textColorBlackPlain = Color(0xff454545);
   static const Color textColorBlackPlain2 = Color(0xff4f4f4f);
   static const Color textColorBlackShallow = Color(0xff666666);
@@ -67,6 +70,7 @@ class ColorConstant {
   static const Color textColorBlueDeep = Color(0xff1e5af0);
   static const Color textColorBlue = Color(0xff367bfa);
   static const Color textColorGreyDeep = Color(0xff999999);
+  static const Color textColorGreyDeep2 = Color(0xcca0a0a0);
   static const Color textColorGrey = Color(0xffcccccc);
   static const Color textYellow = Color(0xffcb8c11);
   

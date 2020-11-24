@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
+        primaryColor:  ColorConstant.themeRedColor,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
@@ -327,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          color: ColorConstant.bgGrey4,
+          color: ColorConstant.bgGreyColor1,
           height: ScreenUtils.getScreenH(context)-ScreenUtils.getStatusBarH(context)-60,
           child: ListView.builder(
             itemCount: servicesInfoShowList.length,
@@ -408,7 +409,7 @@ class _DeviceItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: WeightStyle.bold,
-                color: ColorConstant.textColorBlack,
+                color: ColorConstant.textBlack3,
               ),
             ),
             Container(
@@ -422,11 +423,11 @@ class _DeviceItem extends StatelessWidget {
                     '$ip',
                     style: TextStyle(
                       fontSize: 12,
-                      color: ColorConstant.textColorBlackShallow,
+                      color: ColorConstant.textColorGreyDeep,
                     ),
                   ),
                   Text(
-                    '[${idx+1}]',
+                    '${idx+1}',
                     style: TextStyle(
                       fontSize: 16,
                       color: ColorConstant.textColorBlackShallow,
