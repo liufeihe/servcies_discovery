@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:bonsoir/bonsoir.dart';
 import 'package:flutter/material.dart';
-import 'package:services_discovery/bonsoir/discovery/discovery.dart';
-import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
-import 'package:services_discovery/bonsoir/discovery/resolved_service.dart';
+// import 'package:services_discovery/bonsoir/discovery/discovery.dart';
+// import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
+// import 'package:services_discovery/bonsoir/discovery/resolved_service.dart';
 import 'package:services_discovery/multicast_dns/multicast_dns.dart';
 import 'package:services_discovery/utils/route.dart';
 import 'package:services_discovery/utils/screen.dart';
@@ -115,11 +116,12 @@ class _MyHomePageState extends State<MyHomePage> {
         isStart = isStart;
       });
     }
-    if (Platform.isAndroid) {
-      _startMdnsClient();
-    } else if (Platform.isIOS) {
-      _startNsd();
-    }
+    _startNsd();
+    // if (Platform.isAndroid) {
+    //   _startMdnsClient();
+    // } else if (Platform.isIOS) {
+    //   _startNsd();
+    // }
   }
 
   void _stopDiscovery(){
@@ -135,11 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
         isStart = isStart;
       });
     }
-    if (Platform.isAndroid) {
-      _cancelMdnsClient();
-    } else if (Platform.isIOS) {
-      _cancelNsd();
-    }
+    _cancelNsd();
+    // if (Platform.isAndroid) {
+    //   _cancelMdnsClient();
+    // } else if (Platform.isIOS) {
+    //   _cancelNsd();
+    // }
   }
 
   void _startNsd() async {
