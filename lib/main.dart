@@ -8,10 +8,12 @@ import 'package:flutter/material.dart';
 // import 'package:services_discovery/bonsoir/discovery/discovery_event.dart';
 // import 'package:services_discovery/bonsoir/discovery/resolved_service.dart';
 import 'package:services_discovery/multicast_dns/multicast_dns.dart';
+import 'package:services_discovery/utils/colorConstant.dart';
 import 'package:services_discovery/utils/route.dart';
 import 'package:services_discovery/utils/screen.dart';
 import 'package:services_discovery/utils/serviceInfo.dart';
 import 'package:services_discovery/views/device.dart';
+import 'package:services_discovery/widgets/itemContainer.dart';
 
 void main() {
   runApp(MyApp());
@@ -39,7 +41,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: '设备发现'),
+      home: MyHomePage(title: '机器人列表'),
       routes: {
         '/device': (context)=>Device(),
       }
@@ -297,6 +299,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    _startDiscovery();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _stopDiscovery();
 
@@ -312,16 +320,17 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SingleChildScrollView(
         child: Container(
+          color: ColorConstant.bgGrey4,
           height: ScreenUtils.getScreenH(context)-ScreenUtils.getStatusBarH(context)-60,
           child: ListView.builder(
             itemCount: servicesInfoShowList.length,
             itemBuilder: (context, index) {
               ServiceInfo service = servicesInfoShowList[index];
               return ListTile(
-                contentPadding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                contentPadding: EdgeInsets.zero,
                 title: _DeviceItem(
-                  idx: servicesInfoShowList.length-1-index,
-                  text: '$service',
+                  idx: index,
+                  service: service,
                   tapCallback: () async {
                     var ip = await _getIp(service.ips);
                     var port = service.port;
@@ -343,7 +352,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _startDiscovery();
           }
         },
-        tooltip: isStart?'停止':'启动',
+        tooltip: isStart?'停止':'扫描',
         child: Icon(isStart?Icons.stop:Icons.play_arrow),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
@@ -353,12 +362,12 @@ class _MyHomePageState extends State<MyHomePage> {
 void voidCallback(){}
 class _DeviceItem extends StatelessWidget {
   final int idx;
-  final String text;
+  final ServiceInfo service;
   final Function tapCallback;
 
   _DeviceItem({
     this.idx,
-    this.text:'',
+    this.service,
     this.tapCallback: voidCallback,
   });
 
@@ -368,11 +377,44 @@ class _DeviceItem extends StatelessWidget {
       onTap: (){
         tapCallback();
       },
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(0,10,0,10),
-        child: Text(
-          '(${idx+1}), $text',
-        ),
+      child: ItemContainer(
+        margin: EdgeInsets.fromLTRB(15, 3, 15, 3),
+        item: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              '${service.name}',
+              style: TextStyle(
+                fontSize: 18,
+                color: ColorConstant.textColorBlack,
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top:10),
+              width: double.infinity,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    '${service.ips[0]}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ColorConstant.textColorBlack,
+                    ),
+                  ),
+                  Text(
+                    '[${idx+1}]',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: ColorConstant.textColorBlack,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        )
       ),
     );
   }
