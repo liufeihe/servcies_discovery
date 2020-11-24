@@ -15,7 +15,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="设备发现"
+        android:label="L Master"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
         <activity

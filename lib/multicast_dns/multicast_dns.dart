@@ -92,6 +92,8 @@ class MDnsClient {
     _mDnsPort = mDnsPort;
     _mDnsAddress = mDnsAddress;
 
+    // print('listenAddress: $listenAddress');
+
     assert(listenAddress.address == InternetAddress.anyIPv4.address ||
         listenAddress.address == InternetAddress.anyIPv6.address);
 
@@ -118,7 +120,7 @@ class MDnsClient {
     _mDnsAddress ??= _incoming.address.type == InternetAddressType.IPv4
         ? mDnsAddressIPv4
         : mDnsAddressIPv6;
-    print(_mDnsAddress);
+    // print(_mDnsAddress);
 
     final List<NetworkInterface> interfaces =
         await interfacesFactory(listenAddress.type);
@@ -142,8 +144,9 @@ class MDnsClient {
 
     for (NetworkInterface interface in interfaces) {
       // Create a socket for sending on each adapter.
-      print(interface);
+      // print('interface, $interface');
       final InternetAddress targetAddress = interface.addresses[0];
+      //  print('interface, $interface, $targetAddress');
       final RawDatagramSocket socket = await _rawDatagramSocketFactory(
         targetAddress,
         _mDnsPort,
@@ -236,8 +239,17 @@ class MDnsClient {
     // Send the request on all interfaces.
     final List<int> packet = query.encode();
     for (RawDatagramSocket socket in _sockets) {
-      socket.send(packet, _mDnsAddress, _mDnsPort);
+      try {
+        if (socket.address.address=='0.0.0.0') {
+          continue;
+        }
+        // print('_mDnsAddress, ${socket.address.address}, ${_mDnsAddress.address}, $_mDnsPort');
+        socket.send(packet, _mDnsAddress, _mDnsPort);
+      } catch (e) {
+        print('_mDnsAddress, $e');
+      }
     }
+      
     return results;
   }
 

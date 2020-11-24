@@ -76,12 +76,15 @@ class _MyHomePageState extends State<MyHomePage> {
   BonsoirDiscovery discovery;
   Timer timer;
   String serviceType = '_lebai._tcp';
+  String _netIp = '';
 
-  void _addService(service){
+  void _addService(service) async {
     var name = service['name'];
     var ips = service['ips'];
     var port = service['port'];
     ips = ips!=null?ips:[];
+
+    _netIp = await getNetworkIpFromConnect();
 
     int idx = servicesInfoMap[name];
     if (idx!=null) {
@@ -118,7 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
         isStart = isStart;
       });
     }
-    _startNsd();
+    _startMdnsClient();
+    // _startNsd();
     // if (Platform.isAndroid) {
     //   _startMdnsClient();
     // } else if (Platform.isIOS) {
@@ -139,7 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
         isStart = isStart;
       });
     }
-    _cancelNsd();
+
+    _cancelMdnsClient();
+    // _cancelNsd();
     // if (Platform.isAndroid) {
     //   _cancelMdnsClient();
     // } else if (Platform.isIOS) {
@@ -237,15 +243,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return netIp;
   }
 
-  Future<String> _getIp(List<String> ips) async {
+  String _getIp(List<String> ips) {
     String ip = '';
     if (ips.length==1) {
       ip = ips[0];
       return ip;
     }
 
-    String netIp = await getNetworkIpFromConnect();
-    List<int> dst = _getIpArrFromStr(netIp);
+    List<int> dst = _getIpArrFromStr(_netIp);
     if (dst.length==0) {
       ip = ips[0];
       return ip;
@@ -269,8 +274,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       ipSumArr.add(sum);
     }
-    print(ipIntArr);
-    print(ipSumArr);
+    // print(ipIntArr);
+    // print(ipSumArr);
     int idx = -1;
     if (ipSumArr.length>0) {
       int m = ipSumArr[0];
@@ -332,9 +337,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 contentPadding: EdgeInsets.zero,
                 title: _DeviceItem(
                   idx: index,
-                  service: service,
-                  tapCallback: () async {
-                    var ip = await _getIp(service.ips);
+                  name: service.name,
+                  ip: _getIp(service.ips),
+                  tapCallback: () {
+                    var ip = _getIp(service.ips);
                     var port = service.port;
                     var url = 'http://$ip:$port/dashboard/#/login?code=1111&redirect=/main';
                     RouteHandler.goTo(context, '/device', arguments: {'url': url});
@@ -364,12 +370,14 @@ class _MyHomePageState extends State<MyHomePage> {
 void voidCallback(){}
 class _DeviceItem extends StatelessWidget {
   final int idx;
-  final ServiceInfo service;
+  final String name;
+  final String ip;
   final Function tapCallback;
 
   _DeviceItem({
     this.idx,
-    this.service,
+    this.name,
+    this.ip,
     this.tapCallback: voidCallback,
   });
 
@@ -380,6 +388,9 @@ class _DeviceItem extends StatelessWidget {
     }
     return name;
   }
+  // String _getIps(List<String> ips){    
+  //   return ips.join('/');
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +404,7 @@ class _DeviceItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              '${_trimName(service.name)}',
+              '${_trimName(name)}',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: WeightStyle.bold,
@@ -408,7 +419,7 @@ class _DeviceItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    '${service.ips[0]}',
+                    '$ip',
                     style: TextStyle(
                       fontSize: 12,
                       color: ColorConstant.textColorBlackShallow,
