@@ -16,7 +16,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="L Master"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_l_master"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
