@@ -300,7 +300,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    _startDiscovery();
+    Future.delayed(Duration(milliseconds: 100), (){
+      _startDiscovery();
+    });
     super.initState();
   }
 
@@ -394,6 +396,7 @@ class _DeviceItem extends StatelessWidget {
               '${_trimName(service.name)}',
               style: TextStyle(
                 fontSize: 18,
+                fontWeight: WeightStyle.bold,
                 color: ColorConstant.textColorBlack,
               ),
             ),
@@ -408,14 +411,14 @@ class _DeviceItem extends StatelessWidget {
                     '${service.ips[0]}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: ColorConstant.textColorBlack,
+                      color: ColorConstant.textColorBlackShallow,
                     ),
                   ),
                   Text(
                     '[${idx+1}]',
                     style: TextStyle(
                       fontSize: 16,
-                      color: ColorConstant.textColorBlack,
+                      color: ColorConstant.textColorBlackShallow,
                     ),
                   ),
                 ],
