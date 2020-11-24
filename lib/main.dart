@@ -334,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   tapCallback: () async {
                     var ip = await _getIp(service.ips);
                     var port = service.port;
-                    var url = 'http://$ip:$port';
+                    var url = 'http://$ip:$port/dashboard/#/login?code=1111&redirect=/main';
                     RouteHandler.goTo(context, '/device', arguments: {'url': url});
                   }
                 ),
@@ -371,6 +371,14 @@ class _DeviceItem extends StatelessWidget {
     this.tapCallback: voidCallback,
   });
 
+  String _trimName(String name) {
+    var idx = name.indexOf('[');
+    if (idx!=-1) {
+      name = name.substring(0, idx);
+    }
+    return name;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -383,7 +391,7 @@ class _DeviceItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              '${service.name}',
+              '${_trimName(service.name)}',
               style: TextStyle(
                 fontSize: 18,
                 color: ColorConstant.textColorBlack,
